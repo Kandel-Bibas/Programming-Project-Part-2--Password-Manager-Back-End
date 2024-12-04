@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+    Program Author: Bibas Kandel
+
+    USM ID:  W10170085
+
+    Assignment: Programming Project Part 2- Password Manager Back End
+
+    Description: Paraphrase : This program implements a secure passord manager that allows users to store, view, edit and manage their platform password with encryption.
+
+*/
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -21,6 +31,7 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         private bool _isVisible = false;
         private bool _editing = false;
 
+
         public PasswordRow(PasswordModel source)
         {
             _pass = source;
@@ -32,15 +43,11 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-                //complete getter for Platform.  currenly returns an empty string. 
-                return "";
+                return _pass.PlatformName;
             }
             set
             {
-                //complete setter for Platform.
-
-                //This needs to be called for updating the binding when
-                //the platform name is edited.  Leave here.
+                _pass.PlatformName = value;
                 RefreshRow();
             }
         }
@@ -49,12 +56,11 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-                //Complete getter for User Name.
-                return "";
+                return _pass.PlatformUserName;
             }
             set
             {
-                //complete setter for User Name.
+                _pass.PlatformUserName = value;
                 RefreshRow();
             }
         }
@@ -63,20 +69,18 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-               //complete getter for Password.  Currenly returns "hidden."
-               //This should return the actual password is the Show toggle
-               //is true.
-               //note that the password should be decrypted using the user's
-               //encryption key before being shown.
-               return "<hidden>";
+               var curerntUser = App.LoginController.GetCurrentUser();
+               if (_isVisible == true){
+                return PasswordCrypto.Decrypt(_pass.PasswordText, Tuple.Create(curerntUser.Key,curerntUser.IV));
+               }
+               else{
+                return "<hidden>";
+               }
             }
             set
             {
-                //complete setter for password.  Note that this ONLY changes the password
-                //stored in the row.  The password should not be committed to the model
-                //data until save is clicked.
-
-
+                var curerntUser = App.LoginController.GetCurrentUser();
+                _pass.PasswordText = PasswordCrypto.Encrypt(value,Tuple.Create(curerntUser.Key,curerntUser.IV));
                 RefreshRow();
             }
         }
@@ -85,9 +89,7 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-                //complete getter for the pass ID.  Is binded to the edit/save/copy/delete buttons.
-                //currently returns -1;
-                return -1;
+                return _pass.ID;
             }
         }
 
@@ -95,13 +97,12 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-                //complete getter for IsShown, which is binded to the Show Password
-                //toggle/switch.
-                return false;
+               return _isVisible;
             }
             set
             {
-                //complete setter for IsShown.
+                _isVisible = value;
+                OnPropertyChanged(nameof(PlatformPassword));
                 RefreshRow();
             }
         }
@@ -110,13 +111,11 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-                //Complete getter for Editing, which is toggled when the "edit/save" button
-                //is clicked.  
-                return false;
+                return _editing;
             }
             set
             {
-                //Complete setter for Editing.
+                _editing = value;
                 RefreshRow();
             }
         }
@@ -135,8 +134,7 @@ namespace CSC317PassManagerP2Starter.Modules.Views
 
         public void SavePassword()
         {
-            //Is called when the "save" button is clicked.  Saves the changes to the
-            //password to the model data.
+            App.PasswordController.UpdatePassword(_pass);
         }
     }
 

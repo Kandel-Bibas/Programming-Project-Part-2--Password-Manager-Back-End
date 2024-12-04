@@ -1,4 +1,15 @@
-﻿using CSC317PassManagerP2Starter.Modules.Models;
+﻿/*
+    Program Author: Bibas Kandel
+
+    USM ID:  W10170085
+
+    Assignment: Programming Project Part 2- Password Manager Back End
+
+    Description: Paraphrase : This program implements a secure passord manager that allows users to store, view, edit and manage their platform password with encryption.
+
+*/
+
+using CSC317PassManagerP2Starter.Modules.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,23 +25,41 @@ namespace CSC317PassManagerP2Starter.Modules.Controllers
         /*
          * This class is incomplete.  Fill in the method definitions below.
          */
-        private User _user = new User();
-        private bool _loggedIn = false;
+        private User _user;
 
-        public User? CurrentUser
+        public LoginController()
         {
-            get
-            {
-                //Returns a copy of the user data.  Currently returning null.
-                return null;
-            }
+            var key = PasswordCrypto.GenKey();
+            _user = new User(
+                id:  1,
+                firstname: "John",
+                lastname: "Doe",
+                username: "test",
+                passwordhash: PasswordCrypto.GetHash("ab1234"),
+                key: key.Item1,
+                iv: key.Item2
+            );
+        }
+       
+
+        public User? GetCurrentUser()
+        {
+            return new User(_user.ID, _user.FirstName, _user.LastName, _user.UserName, _user.PasswordHash, _user.Key, _user.IV);
         }
 
         public AuthenticationError Authenticate(string username, string password)
         {
             //determines whether the inputted username/password matches the stored
-            //username/password.  currently returns a NONE error status.
+
+            if (username != _user.UserName){
+                return AuthenticationError.INVALIDUSERNAME;
+            }
+
+            if (!PasswordCrypto.CompareBytes(PasswordCrypto.GetHash(password), _user.PasswordHash))
+                return AuthenticationError.INVALIDPASSWORD;
+
             return AuthenticationError.NONE;
+
         }
     }
 

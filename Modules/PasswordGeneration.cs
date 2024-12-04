@@ -1,4 +1,14 @@
-﻿using System;
+﻿/*
+    Program Author: Bibas Kandel
+
+    USM ID:  W10170085
+
+    Assignment: Programming Project Part 2- Password Manager Back End
+
+    Description: Paraphrase : This program implements a secure passord manager that allows users to store, view, edit and manage their platform password with encryption.
+
+*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

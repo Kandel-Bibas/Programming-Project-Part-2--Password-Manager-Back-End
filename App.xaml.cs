@@ -12,7 +12,7 @@ namespace CSC317PassManagerP2Starter
         {
             InitializeComponent();
 
-            MainPage = new LoginView();
+            MainPage = new NavigationPage(new LoginView());
         }
     }
 }

@@ -1,4 +1,16 @@
+/*
+    Program Author: Bibas Kandel
+
+    USM ID:  W10170085
+
+    Assignment: Programming Project Part 2- Password Manager Back End
+
+    Description: Paraphrase : This program implements a secure passord manager that allows users to store, view, edit and manage their platform password with encryption.
+
+*/
 using System.Collections.ObjectModel;
+using CSC317PassManagerP2Starter.Modules.Models;
+using Security;
 
 namespace CSC317PassManagerP2Starter.Modules.Views;
 
@@ -21,10 +33,13 @@ public partial class PasswordListView : ContentPage
         collPasswords.ItemsSource = _rows;
     }
 
+    private void RefreshPasswordlist(){
+        App.PasswordController.PopulatePasswordView(_rows);
+    }
+
     private void TextSearchBar(object sender, TextChangedEventArgs e)
     {
-       //Is binded to the Search Bar.  Calls PopulatePasswords from the Password Controller.
-       //to update the list of shown passwords.
+       App.PasswordController.PopulatePasswordView(_rows, e.NewTextValue);
     }
 
     private void CopyPassToClipboard(object sender, EventArgs e)
@@ -34,20 +49,60 @@ public partial class PasswordListView : ContentPage
 
         //Example of how to get the ID of the password selected.
         int ID = Convert.ToInt32((sender as Button).CommandParameter);
+        PasswordModel pass = App.PasswordController.GetPassword(ID);
+        
+        var curerntUser = App.LoginController.GetCurrentUser();
+        if(pass != null){
+            string password = PasswordCrypto.Decrypt(pass.PasswordText, Tuple.Create(curerntUser.Key,curerntUser.IV));
+            MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Clipboard.Default.SetTextAsync(password); 
+                });
+        } 
+        
+    }
+
+    private void ShowPassword(object sender, EventArgs e){
+        this.Appearing += OnPageAppearing;
     }
 
     private void EditPassword(object sender, EventArgs e)
     {
-        //Called when Edit/Save is clicked.
+        int ID = Convert.ToInt32((sender as Button).CommandParameter);
+        var row = _rows.FirstOrDefault(X => X.PasswordID == ID);
+        if (row != null){
+            if (row.Editing){
+                row.Editing = false;
+                row.SavePassword();
+                (sender as Button).Text = "Edit";
+            }
+            else{
+                row.Editing = true;
+                (sender as Button).Text = "Save";
+            }
+        }
     }
 
     private void DeletePassword(object sender, EventArgs e)
     {
-        //Called when Delete is clicked.
+        int ID = Convert.ToInt32((sender as Button).CommandParameter);
+        if (App.PasswordController.RemovePassword(ID)){
+            var row = _rows.FirstOrDefault(X => X.PasswordID == ID);
+            if (row != null){
+                _rows.Remove(row);
+            }
+        }
     }
 
-    private void ButtonAddPassword(object sender, EventArgs e)
+    private async void ButtonAddPassword(object sender, EventArgs e)
     {
-        //Called when Add Password is clicked.  
+        await Navigation.PushAsync(new AddPasswordView()); 
+        this.Appearing += OnPageAppearing;
+            
+    }
+
+    private void OnPageAppearing(object sender, EventArgs e){
+        RefreshPasswordlist();
+        this.Appearing -= OnPageAppearing;
     }
 }
