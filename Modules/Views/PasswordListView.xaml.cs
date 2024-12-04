@@ -62,9 +62,6 @@ public partial class PasswordListView : ContentPage
         
     }
 
-    private void ShowPassword(object sender, EventArgs e){
-        this.Appearing += OnPageAppearing;
-    }
 
     private void EditPassword(object sender, EventArgs e)
     {

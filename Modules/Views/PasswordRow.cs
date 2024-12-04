@@ -31,7 +31,6 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         private bool _isVisible = false;
         private bool _editing = false;
 
-
         public PasswordRow(PasswordModel source)
         {
             _pass = source;
@@ -69,19 +68,26 @@ namespace CSC317PassManagerP2Starter.Modules.Views
         {
             get
             {
-               var curerntUser = App.LoginController.GetCurrentUser();
-               if (_isVisible == true){
-                return PasswordCrypto.Decrypt(_pass.PasswordText, Tuple.Create(curerntUser.Key,curerntUser.IV));
-               }
-               else{
-                return "<hidden>";
-               }
+                if (!_isVisible)
+                {
+                    return "<Hidden>";
+                }
+
+                var currentUser = App.LoginController.GetCurrentUser();
+                return PasswordCrypto.Decrypt(_pass.PasswordText, Tuple.Create(currentUser.Key, currentUser.IV));
+                
             }
             set
             {
-                var curerntUser = App.LoginController.GetCurrentUser();
-                _pass.PasswordText = PasswordCrypto.Encrypt(value,Tuple.Create(curerntUser.Key,curerntUser.IV));
-                RefreshRow();
+                if (value == "<Hidden>" || value == "<Error>")
+                {
+                    return;
+                }
+
+                var currentUser = App.LoginController.GetCurrentUser();
+                
+                    _pass.PasswordText = PasswordCrypto.Encrypt(value, Tuple.Create(currentUser.Key, currentUser.IV));
+                    RefreshRow();
             }
         }
 
@@ -101,9 +107,11 @@ namespace CSC317PassManagerP2Starter.Modules.Views
             }
             set
             {
-                _isVisible = value;
-                OnPropertyChanged(nameof(PlatformPassword));
+                if (_isVisible != value)
+                {
+                    _isVisible = value;
                 RefreshRow();
+            }
             }
         }
 
